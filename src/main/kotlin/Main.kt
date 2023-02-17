@@ -1,14 +1,10 @@
-
-
 fun main(args: Array<String>) {
-    val mine = "¬T ^ F"
-    val input = mine
-    val lexer = Lexer(input)
+    val mine = "¬T"
+    val lexer = Lexer("$mine ^ (T ^ F)")
     val interpreter = Interpreter(lexer)
     val result = interpreter.eval()
     println(result)
 }
-
 
 enum class Token {
     True, False, And, Or, Not, LeftParen, RightParen
@@ -17,13 +13,13 @@ enum class Token {
 class Lexer(private val input: String) {
     private var current = 0
 
-    fun nextToken(): Token {
+    fun nextToken(): Token? {
         while (current < input.length && input[current].isWhitespace()) {
             current++
         }
 
         if (current == input.length) {
-            return Token.True
+            return null
         }
 
         when (input[current]) {
@@ -56,20 +52,20 @@ class Lexer(private val input: String) {
                 return Token.RightParen
             }
         }
-        return Token.True
+        throw Exception("Invalid token")
     }
 }
 
 class Interpreter(private val lexer: Lexer) {
     fun eval(): Boolean {
-        val token = lexer.nextToken()
+        val token = lexer.nextToken() ?: throw Exception("Unexpected end of input")
         when (token) {
             Token.True -> return true
             Token.False -> return false
             Token.Not -> return !eval()
             Token.LeftParen -> {
                 val result = eval()
-                val rightParen = lexer.nextToken()
+                val rightParen = lexer.nextToken() ?: throw Exception("Unexpected end of input")
                 if (rightParen != Token.RightParen) {
                     throw Exception("Expected RightParen")
                 }
